@@ -22,4 +22,6 @@ extension Acronym: PostgreSQLModel  { }
 // N.B. Can automatically infer scheme for the model due to Codable conformance
 extension Acronym: Migration { }
 
+extension Acronym: Parameter { }
+
 
