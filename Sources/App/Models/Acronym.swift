@@ -1,5 +1,5 @@
 import Vapor
-import FluentSQLite
+import FluentPostgreSQL
 
 // N.B. All Fluent models must be fully codable conformant (for writing to the database)
 final class Acronym: Codable {
@@ -17,7 +17,7 @@ final class Acronym: Codable {
 // Codable
 extension Acronym: Content { }
 
-extension Acronym: SQLiteModel { }
+extension Acronym: PostgreSQLModel  { }
 
 // N.B. Can automatically infer scheme for the model due to Codable conformance
 extension Acronym: Migration { }
