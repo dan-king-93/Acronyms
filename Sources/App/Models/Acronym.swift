@@ -14,6 +14,7 @@ final class Acronym: Codable {
     }
 }
 
+// Codable
 extension Acronym: Content { }
 
 extension Acronym: SQLiteModel { }
