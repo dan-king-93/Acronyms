@@ -10,7 +10,7 @@ struct AcronymsController: RouteCollection {
         let acronymRoutes = router.grouped("api", "acronyms")
         
         acronymRoutes.get(use: getAllHandler)
-        acronymRoutes.post(use: createHandler)
+        acronymRoutes.post(Acronym.self, use: createHandler)
         acronymRoutes.get(Acronym.parameter, use: searchHandler)
         acronymRoutes.put(Acronym.parameter, use: updateHandler)
         acronymRoutes.delete(Acronym.parameter, use: deleteHandler)
@@ -23,14 +23,24 @@ struct AcronymsController: RouteCollection {
         return Acronym.query(on: req).all()
     }
     
-    func createHandler(_ req: Request) throws -> Future<Acronym> {
-        
-        return try req
-            .content
-            .decode(Acronym.self)
-            .flatMap(to: Acronym.self, { acronym in
-                return acronym.save(on: req)
-            })
+//    func createHandler(_ req: Request) throws -> Future<Acronym> {
+//
+//        return try req
+//            .content
+//            .decode(Acronym.self)
+//            .flatMap(to: Acronym.self, { acronym in
+//                return acronym.save(on: req)
+//            })
+//    }
+    
+    // Alternative to above. Vapor helpers know
+    // to decode into the type of the first passed
+    // in parameter, rather than having to do the
+    // manual decode
+    func createHandler(_ req: Request,
+                        acronym: Acronym
+        ) throws -> Future<Acronym> {
+        return acronym.save(on: req)
     }
     
     func searchHandler(_ req: Request) throws -> Future<Acronym> {
