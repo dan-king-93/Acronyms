@@ -36,6 +36,12 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     // Configure migrations
     var migrations = MigrationConfig()
+    
+    // This sequencing is important! We link the acronym's user
+    // ID to the User table. The User table must therefore be
+    // created first
+    migrations.add(model: User.self, database: .psql)
     migrations.add(model: Acronym.self, database: .psql)
+    
     services.register(migrations)
 }

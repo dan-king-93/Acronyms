@@ -5,12 +5,14 @@ import FluentPostgreSQL
 final class Acronym: Codable {
     
     var id: Int?
+    var userID: User.ID
     var short: String
     var long: String
     
-    init(short: String, long: String) {
+    init(short: String, long: String, userID: User.ID) {
         self.short = short
         self.long = long
+        self.userID = userID
     }
 }
 
@@ -20,8 +22,28 @@ extension Acronym: Content { }
 extension Acronym: PostgreSQLModel  { }
 
 // N.B. Can automatically infer scheme for the model due to Codable conformance
-extension Acronym: Migration { }
-
 extension Acronym: Parameter { }
 
+extension Acronym {
+    
+    // parent child relationship. Requires being in the same database
+    var user: Parent<Acronym, User> {
+        return parent(\.userID)
+    }
+}
+
+extension Acronym: Migration {
+    
+    static func prepare(on connection: PostgreSQLConnection
+        ) -> Future<Void> {
+        
+        return Database.create(self, on: connection) { builder in
+            
+            try addProperties(to: builder)
+            
+            // setup of foreign key constraints
+            builder.reference(from: \.userID, to: \User.id)
+        }
+    }
+}
 
