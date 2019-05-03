@@ -18,28 +18,31 @@ struct AcronymsController: RouteCollection {
         acronymRoutes.get("first", use: getFirstHandler)
         acronymRoutes.get("sorted", use: sortedHandler)
         acronymRoutes.get(Acronym.parameter, "user", use: getUserHandler)
+        acronymRoutes.post(Acronym.parameter, "categories", Category.parameter, use: addCategoriesHandler)
+        acronymRoutes.get(Acronym.parameter, "categories", use: getCategoriesHandler)
+        acronymRoutes.delete(Acronym.parameter, "categories", Category.parameter, use: removeCategoriesHandler)
     }
     
     func getAllHandler(_ req: Request) -> Future<[Acronym]> {
         return Acronym.query(on: req).all()
     }
     
-//    func createHandler(_ req: Request) throws -> Future<Acronym> {
-//
-//        return try req
-//            .content
-//            .decode(Acronym.self)
-//            .flatMap(to: Acronym.self, { acronym in
-//                return acronym.save(on: req)
-//            })
-//    }
+    //    func createHandler(_ req: Request) throws -> Future<Acronym> {
+    //
+    //        return try req
+    //            .content
+    //            .decode(Acronym.self)
+    //            .flatMap(to: Acronym.self, { acronym in
+    //                return acronym.save(on: req)
+    //            })
+    //    }
     
     // Alternative to above. Vapor helpers know
     // to decode into the type of the first passed
     // in parameter, rather than having to do the
     // manual decode
     func createHandler(_ req: Request,
-                        acronym: Acronym
+                       acronym: Acronym
         ) throws -> Future<Acronym> {
         return acronym.save(on: req)
     }
@@ -111,6 +114,38 @@ struct AcronymsController: RouteCollection {
             .flatMap(to: User.self) { acronym in
                 
                 acronym.user.get(on: req)
+        }
+    }
+    
+    func addCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        
+        return try flatMap(to: HTTPStatus.self,
+                           req.parameters.next(Acronym.self),
+                           req.parameters.next(Category.self)) { acronym, category in
+                            
+                            return acronym.categories
+                                .attach(category, on: req)
+                                .transform(to: .created)
+        }
+    }
+    
+    func getCategoriesHandler(_ req: Request) throws -> Future<[Category]> {
+        
+        return try req.parameters.next(Acronym.self)
+            .flatMap(to: [Category].self) { acronym in
+                
+                try acronym.categories.query(on: req).all()
+        }
+    }
+    
+    func removeCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
+        
+        return try flatMap(to: HTTPStatus.self,
+                           req.parameters.next(Acronym.self),
+                           req.parameters.next(Category.self)) { acronym, category in
+                            
+                            return acronym.categories.detach(category, on: req)
+                                .transform(to: .noContent)
         }
     }
 }
